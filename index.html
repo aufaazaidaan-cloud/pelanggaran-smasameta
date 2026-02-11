@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Form Pelanggaran SMAN 1 Magetan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-container {
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full form-container rounded-2xl p-8 border border-gray-100">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-blue-800">SMAN 1 MAGETAN</h1>
+            <p class="text-gray-500 text-sm">Form Pencatatan Pelanggaran Siswa</p>
+        </div>
+
+        <form id="violationForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                <input type="text" name="nama" required
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="Masukkan nama siswa">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                    <select name="kelas" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="">Pilih Kelas</option>
+                        <option value="X">Kelas X</option>
+                        <option value="XI">Kelas XI</option>
+                        <option value="XII">Kelas XII</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Absen</label>
+                    <input type="number" name="absen" required min="1" max="50"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="1-50">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Pelanggaran</label>
+                <textarea name="pelanggaran" required rows="3"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="Deskripsikan pelanggaran..."></textarea>
+            </div>
+
+            <button type="submit" id="submitBtn"
+                class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 rounded-lg shadow-md transition-all flex items-center justify-center">
+                <span>Kirim Data</span>
+            </button>
+        </form>
+
+        <div id="statusMessage" class="hidden mt-4 p-3 rounded-lg text-center text-sm font-medium"></div>
+    </div>
+
+    <script>
+        /**
+         * PENTING: Ganti URL di bawah ini dengan URL Web App dari Google Apps Script Anda.
+         * Contoh: https://script.google.com/macros/s/AKfycb...XXXX/exec
+         */
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_iZyvx_60LVw_wVOxB_74wRydRfiThL1SmaPUx5793_gECqP4PHu_nMhDe4N3GmhLQA/exec";
+
+        const form = document.getElementById('violationForm');
+        const btn = document.getElementById('submitBtn');
+        const status = document.getElementById('statusMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Cek apakah URL sudah diisi atau belum
+            if (SCRIPT_URL === "MASUKKAN_URL_DEPLOY_ANDA_DI_SINI" || SCRIPT_URL === "") {
+                showMessage("Kesalahan: URL Apps Script belum diatur di dalam kode!", "bg-red-100 text-red-700");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>Mengirim...</span>';
+            
+            const formData = new FormData(form);
+            const data = {
+                nama: formData.get('nama'),
+                kelas: formData.get('kelas'),
+                absen: formData.get('absen'),
+                pelanggaran: formData.get('pelanggaran')
+            };
+
+            try {
+                // Menggunakan mode no-cors untuk menghindari isu preflight di Apps Script
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                showMessage("Data berhasil dikirim ke Spreadsheet!", "bg-green-100 text-green-700");
+                form.reset();
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage("Gagal mengirim data. Periksa koneksi atau URL.", "bg-red-100 text-red-700");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Kirim Data</span>';
+            }
+        });
+
+        function showMessage(msg, classes) {
+            status.innerText = msg;
+            status.className = `mt-4 p-3 rounded-lg text-center text-sm font-medium ${classes}`;
+            status.classList.remove('hidden');
+            setTimeout(() => status.classList.add('hidden'), 5000);
+        }
+    </script>
+</body>
+</html>
